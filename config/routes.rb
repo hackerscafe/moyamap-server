@@ -3,6 +3,7 @@ MoyaMap::Application.routes.draw do
   match "api/*path" => "api#call_wiki", via: [:get, :post]
 
   resource :user_session, only: [:create, :show, :destroy]
+  get "/auth/facebook/callback" => "user_sessions#create"
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

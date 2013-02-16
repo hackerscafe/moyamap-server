@@ -37,6 +37,7 @@ gem "acts-as-taggable-on"
 gem "jquery-rails"
 gem "koala"
 gem "configurable_engine"
+gem 'omniauth-facebook'
 
 group :assets do
   gem "twitter-bootstrap-rails", "~> 2.0.6"

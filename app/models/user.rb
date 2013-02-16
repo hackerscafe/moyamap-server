@@ -1,3 +1,3 @@
 class User < ActiveRecord::Base
-  serialize hash, Hash
+  serialize :user_hash, Hash
 end

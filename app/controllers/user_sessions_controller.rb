@@ -12,20 +12,21 @@ class UserSessionsController < ApplicationController
   # POST /user_sessions
   # POST /user_sessions.json
   def create
+    params[:token] ||= request.env['omniauth.auth'][:credentials][:token]
     @user = User.find_by_fb_token(params[:token])
     unless @user
       profile = koala.get_object("me")
-      @user = User.new(name: profile.username, fb_token: params[:token])
-      @user.hash = profile.to_hash
+      @user = User.new(name: profile["username"], fb_token: params[:token])
+      @user.user_hash = profile.to_hash
     end
 
     respond_to do |format|
       if @user.persisted?
-        format.html { redirect_to @user, notice: 'User session was successfully created.' }
+        format.html {  }
         format.json { render json: {status: :logged_in, user: @user}, status: :created }
       else
         @user.save!
-        format.html { redirect_to @user, notice: 'User was successfully created.' }
+        format.html {  }
         format.json { render json: {status: :created, user: @user}, status: :created }
       end
     end
