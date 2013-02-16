@@ -1,4 +1,7 @@
 MoyaMap::Application.routes.draw do
+
+  resource :user_session, only: [:create, :show, :destroy]
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
