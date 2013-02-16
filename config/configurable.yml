@@ -34,11 +34,11 @@
 
 local_wiki_api_endpoint:
    type: string
-   default: http://localwiki.jp/api/
+   default: http://moya-map.trick-with.net/api/
 
 local_wiki_api_key:
    type: string
-   default: http://localwiki.jp/api/
+   default: adbb1d918b0e8b09b4534e0d7b6c8a1cfd0c6e9b
 
 facebook_app_id:
    type: string
