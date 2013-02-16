@@ -13,14 +13,27 @@ class User < ActiveRecord::Base
     checkins.each do |checkin|
       place = checkin["place"]
       name = self.name + "/" + place["id"]
-      body = place["name"]
+      #body = place["name"]
+#location_name=六本木 (Roppongi)
+#message=破滅なう
+#time=2013-02-16 20:00
+#user_name=btm.smellman
+#user_id=1173133984
+#pic_url=https://graph.facebook.com/1173133984/picture
+      body = ["location_name=" + place["name"], 
+              "message=" + checkin["message"],
+              "time=" + checkin["created_time"],
+              "user_name=" + checkin["from"]["name"],
+              "user_id=" + checkin["from"]["id"],
+              "picture_url=" + "https://graph.facebook.com/" + checkin["from"]["id"] + "/picture"].join("\n<br />")
+      
       location = place["location"]
       latitude = location["latitude"]
       longitude = location["longitude"]
       message = checkin["message"]
       post_to_localwiki(name, body, latitude, longitude, message)
     end
-    
+    return true
   end
 
 
@@ -32,15 +45,18 @@ class User < ActiveRecord::Base
       :api_key => Configurable[:local_wiki_api_key]
     }
     page = LocalWikiPage.new args
-    page_obj = {
-      "content" => body,
-      "name" => name
-    }
-    unless page.create(page_obj)
-      logger.debug("can't create page")
-      return false
-    end
     page_hash = page.exist?(name)
+    if page_hash.nil?
+      page_obj = {
+        "content" => body,
+        "name" => name
+      }
+      unless page.create(page_obj)
+        logger.debug("can't create page")
+        return false
+      end
+      page_hash = page.exist?(name)
+    end
     page_api_location = page_hash["resource_uri"]
     map_obj = {
       "geom" => {
@@ -57,18 +73,19 @@ class User < ActiveRecord::Base
     map = LocalWikiMap.new args
     unless map.create(map_obj)
       logger.debug("can't create map")
-      return false
     end
     search_and_add_tag(args, name, body, page_api_location, message)
     return true
   end
 
   def search_and_add_tag(args, name, body, page_api_location, message)
-    tag_name = get_match_tag(message)
-    if tag_name
-      tag_resource_uri = fetch_or_create_tag(args, tag_name)
-      if tag_resource_uri
-        add_or_new_tag(args, name, page_api_location, tag_resource_uri, tag_name)
+    tag_names = get_match_tags(message)
+    unless tag_names.blank?
+      tag_names.each do |tag_name|
+        tag_resource_uri = fetch_or_create_tag(args, tag_name)
+        if tag_resource_uri
+          add_or_new_tag(args, name, page_api_location, tag_resource_uri, tag_name)
+        end
       end
     end
   end
@@ -115,14 +132,15 @@ class User < ActiveRecord::Base
     return true
   end
 
-  def get_match_tag(message)
+  def get_match_tags(message)
+    tag_names = Array.new
     TAGS.each do |tag|
       r = Regexp.new(tag)
       if r =~ message
-        return tag
+        tag_names << tag
       end
     end
-    return nil
+    return tag_names
   end
 
   def unescape_list(tags)
