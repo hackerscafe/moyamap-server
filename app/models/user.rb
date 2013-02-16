@@ -1,3 +1,3 @@
 class User < ActiveRecord::Base
-  attr_accessible :fb_token, :hash, :name
+  serialize hash, Hash
 end
