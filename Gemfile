@@ -38,6 +38,7 @@ gem "jquery-rails"
 gem "koala"
 gem "configurable_engine"
 gem 'omniauth-facebook'
+gem "rest-client"
 
 group :assets do
   gem "twitter-bootstrap-rails", "~> 2.0.6"
