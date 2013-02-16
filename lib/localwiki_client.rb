@@ -28,7 +28,7 @@ class LocalWikiClientBase
 
   def exist?(page_or_id)
     begin
-      response = RestClient.get @base_url + api_path + CGI.escape(page_or_id), headers
+      response = RestClient.get @base_url + api_path + escape_and_get_back_slash(page_or_id), headers
       if response.code == 200
         return JSON.parse(response.to_str)
       end
@@ -56,7 +56,7 @@ class LocalWikiClientBase
     raise RuntimeError, "must set user_name and api_key" unless can_post?
     puts JSON.dump(obj)
     begin
-      response = RestClient.put @base_url + api_path + CGI.escape(page_or_id), JSON.dump(obj), headers
+      response = RestClient.put @base_url + api_path + escape_and_get_back_slash(page_or_id), JSON.dump(obj), headers
       if response.code == 204
         return true
       end
@@ -69,7 +69,7 @@ class LocalWikiClientBase
   def delete(page_or_id)
     raise RuntimeError, "must set user_name and api_key" unless can_post?
     begin
-      response = RestClient.delete @base_url + api_path + CGI.escape(page_or_id), headers
+      response = RestClient.delete @base_url + api_path + escape_and_get_back_slash(page_or_id), headers
       if response.code == 204
         return true
       end
@@ -128,6 +128,9 @@ class LocalWikiClientBase
     return "ApiKey #{@user_name}:#{@api_key}"
   end
 
+  def escape_and_get_back_slash(page_or_id)
+    CGI.escape(page_or_id).gsub("%2F", "/")
+  end
 end
 
 class LocalWikiPage < LocalWikiClientBase
