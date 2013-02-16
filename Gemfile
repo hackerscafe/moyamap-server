@@ -5,7 +5,7 @@ gem 'rails', '3.2.12'
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'sqlite3'
+gem 'postgres'
 
 
 # Gems used only for assets and not required
@@ -20,12 +20,6 @@ group :assets do
   gem 'uglifier', '>= 1.0.3'
 end
 
-gem 'jquery-rails'
-
-# To use ActiveModel has_secure_password
-# gem 'bcrypt-ruby', '~> 3.0.0'
-
-# To use Jbuilder templates for JSON
 # gem 'jbuilder'
 
 # Use unicorn as the app server
@@ -34,20 +28,17 @@ gem 'jquery-rails'
 # Deploy with Capistrano
 # gem 'capistrano'
 
-# To use debugger
-# gem 'debugger'
-ruby "1.9.3-p327"
-
 gem "exception_notification"
 gem "delayed_job_active_record"
 gem "haml-rails"
-gem "jquery-rails"
-gem "simple_form"
-gem "cancan"
 gem "kaminari"
 gem "action_args"
 gem "strong_parameters"
-gem "acts_as_taggable_on"
+gem "acts-as-taggable-on"
+
+gem "koala"
+gem "configurable_engine"
+
 group :assets do
   gem "twitter-bootstrap-rails", "~> 2.0.6"
   gem "jquery-ui-rails"
