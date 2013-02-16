@@ -36,7 +36,7 @@ gem "kaminari"
 gem "action_args"
 gem "strong_parameters"
 gem "acts-as-taggable-on"
-
+gem "jquery-rails"
 gem "koala"
 gem "configurable_engine"
 

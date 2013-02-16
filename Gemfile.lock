@@ -219,6 +219,7 @@ DEPENDENCIES
   exception_notification
   haml-rails
   i18n_generators
+  jquery-rails
   jquery-ui-rails
   kaminari
   koala
