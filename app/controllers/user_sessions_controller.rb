@@ -26,7 +26,7 @@ class UserSessionsController < ApplicationController
       else
         @user.save!
         format.html { redirect_to @user, notice: 'User was successfully created.' }
-        format.json { render json: @user.hash, status: :created }
+        format.json { render json: {status: :created, user: @user}, status: :created }
       end
     end
 
