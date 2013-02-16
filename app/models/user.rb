@@ -27,7 +27,7 @@ class User < ActiveRecord::Base
   private
   def post_to_localwiki(name, body, latitude, longitude, message) 
     args = {
-      :base_url => "http://moya-map.trick-with.net/",
+      :base_url => Configurable[:local_wiki_server],
       :user_name => "apiuser",
       :api_key => Configurable[:local_wiki_api_key]
     }

@@ -2,7 +2,7 @@ require "open-uri"
 
 class ApiController < ApplicationController
   def call_wiki
-    uri = URI(Configurable[:local_wiki_api_endpoint] + params[:path])
+    uri = URI(Configurable[:local_wiki_api_endpoint] + params[:path] + "?" + request.query_string)
     case request.request_method
     when "GET"
       req = Net::HTTP::Get.new(uri.request_uri)

@@ -36,6 +36,10 @@ local_wiki_api_endpoint:
    type: string
    default: http://moya-map.trick-with.net/api/
 
+local_wiki_server:
+   type: string
+   default: http://moya-map.trick-with.net/
+
 local_wiki_api_key:
    type: string
    default: adbb1d918b0e8b09b4534e0d7b6c8a1cfd0c6e9b
