@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
     checkins = @graph.get_connections("me", "checkins")
     
     checkins.each do |checkin|
-      place = checkin["place"].to_s
+      place = checkin["place"]
       name = self.name + "/" + place["id"].to_s
       #body = place["name"]
 #location_name=六本木 (Roppongi)
@@ -27,7 +27,7 @@ class User < ActiveRecord::Base
               "user_id=" + self.user_hash["id"].to_s,
               "picture_url=" + "https://graph.facebook.com/" + self.user_hash["id"].to_s + "/picture"].join("\n<br />")
       
-      location = place["location"].to_s
+      location = place["location"]
       latitude = location["latitude"].to_s
       longitude = location["longitude"].to_s
       message = checkin["message"].to_s
