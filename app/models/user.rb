@@ -49,6 +49,7 @@ class User < ActiveRecord::Base
     res = https.request(req)
     
     json = res.body.present? ? JSON.parse(res.body) : {}
+    logger.debug(json)
     json["data"].each do |data|
       case data["name"]
       when "checkin"
