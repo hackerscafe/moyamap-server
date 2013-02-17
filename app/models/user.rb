@@ -50,7 +50,11 @@ class User < ActiveRecord::Base
     
     json = res.body.present? ? JSON.parse(res.body) : {}
     logger.debug(json)
+    checkins = nil
+    users = nil
+    pages = nil
     json["data"].each do |data|
+      logger.debug(data)
       case data["name"]
       when "checkin"
         checkins = data["fql_result_set"]
