@@ -28,8 +28,8 @@ class User < ActiveRecord::Base
               "picture_url=" + "https://graph.facebook.com/" + self.user_hash["id"].to_s + "/picture"].join("\n<br />")
       
       location = place["location"]
-      latitude = location["latitude"].to_s
-      longitude = location["longitude"].to_s
+      latitude = location["latitude"]
+      longitude = location["longitude"]
       message = checkin["message"].to_s
       post_to_localwiki(name, body, latitude, longitude, message)
     end
@@ -71,6 +71,9 @@ class User < ActiveRecord::Base
       "page" => page_api_location
     }
     map = LocalWikiMap.new args
+    if map.exist?(name)
+      map.delete(name)
+    end
     unless map.create(map_obj)
       logger.debug("can't create map")
     end
