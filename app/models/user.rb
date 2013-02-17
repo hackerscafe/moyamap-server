@@ -37,7 +37,7 @@ class User < ActiveRecord::Base
 
   def crawl_friend_checkins
     base_uri = "https://graph.facebook.com/fql?q="
-    query = '{"checkin": "select checkin_id, message, author_uid, target_type, target_id, page_id, timestamp from checkin where author_uid IN (SELECT uid2 FROM friend WHERE uid1 = ' + self.user_hash["id"] + ') and message != ' + "''" + ' order by timestamp desc limit 1", "user": "select name, id, pic from profile where id in (select author_uid from #checkin)", "page": "select name, page_id, location from page where page_id in (select page_id from #checkin)"}'
+    query = '{"checkin": "select checkin_id, message, author_uid, target_type, target_id, page_id, timestamp from checkin where author_uid IN (SELECT uid2 FROM friend WHERE uid1 = ' + self.user_hash["id"] + ') and message != ' + "''" + ' order by timestamp desc limit 1", "user": "select username, name, id, pic from profile where id in (select author_uid from #checkin)", "page": "select name, page_id, location from page where page_id in (select page_id from #checkin)"}'
     query = CGI.escape(query)
     uri = URI(base_uri + query + "&access_token=" + self.fb_token)
     req = Net::HTTP::Get.new(uri.request_uri)
@@ -71,7 +71,7 @@ class User < ActiveRecord::Base
       user = get_obj(users, "id", author_uid)
       page = get_obj(pages, "page_id", page_id)
       
-      name = user["name"] + "/" + page_id.to_s
+      name = user["username"] + "/" + page_id.to_s
       body = "<pre>" + {
           checkin_id: checkin["checkin_id"].to_s,
           location_name: page["name"].to_s,
