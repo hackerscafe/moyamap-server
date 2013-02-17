@@ -242,7 +242,7 @@ class LocalWikiUtil
       end
     else
       unless page_tags_hash["tags"].include?(tag_resource_uri)
-        page_tags_hash["tags"] = unescape_list(page_tags_hash["tags"])
+        page_tags_hash["tags"] = page_tags_hash["tags"].map{|t| CGI.unescape(t)}
         page_tags_hash["tags"] << new_tag_uri
         unless page_tags.update(page_slug, page_tags_hash)
           p "can't update page_tag"
@@ -252,14 +252,5 @@ class LocalWikiUtil
     end
     return true
   end
-  
-  def self.unescape_list(tags)
-    ret = Array.new
-    tags.each do |tag|
-      ret << CGI.unescape(tag)
-    end
-    return ret
-  end
-  
 
 end
