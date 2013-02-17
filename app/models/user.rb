@@ -15,12 +15,14 @@ class User < ActiveRecord::Base
       place = checkin["place"]
       name = self.name + "/" + place["id"].to_s
       body = "<pre>" + {
+          checkin_id: checkin["id"].to_s,
           location_name: place["name"].to_s,
           message: checkin["message"].to_s,
           time: checkin["created_time"].to_s,
           user_name: self.user_hash["name"].to_s,
           user_id: self.user_hash["id"].to_s,
-          picture_url: "https://graph.facebook.com/#{self.user_hash["id"]}/picture"
+          picture_url: "https://graph.facebook.com/#{self.user_hash["id"]}/picture",
+          friend: ""
       }.to_yaml + "</pre>"
 
       location = place["location"]
@@ -32,8 +34,64 @@ class User < ActiveRecord::Base
     return true
   end
 
+  def crawl_friend_checkins
+    base_uri = "https://graph.facebook.com/fql?q="
+    query = '{"checkin": "select checkin_id, message, author_uid, target_type, target_id, page_id, timestamp from checkin where author_uid IN (SELECT uid2 FROM friend WHERE uid1 = ' + self.user_hash["id"] + ') and message != '' order by timestamp desc limit 1", "user": "select name, id, pic from profile where id in (select author_uid from #checkin)", "page": "select name, page_id, location from page where page_id in (select page_id from #checkin)"}'
+    query = CGI.escape(query)
+    uri = URI(base_uri + query + "&access_token=" + self.fb_token)
+    req = Net::HTTP::Get.new(uri.request_uri)
+    res = Net::HTTP.new(uri.host).request(req)
+    json = res.body.present? ? JSON.parse(res.body) : {}
+    json["data"].each do |data|
+      case data["name"]
+      when "checkin"
+        checkins = data["fql_result_set"]
+      when "user"
+        users = data["fql_result_set"]
+      when "page"
+        pages = data["fql_result_set"]
+      end
+    end
+    checkins.each do |checkin|
+      #place = checkin["place"]
+      author_uid = checkin["author_uid"]
+      page_id = checkin["page_id"]
+      user = get_obj(users, "id", author_uid)
+      page = get_obj(pages, "page_id", page_id)
+      
+      name = user["name"] + "/" + page_id.to_s
+      body = "<pre>" + {
+          checkin_id: checkin["checkin_id"].to_s,
+          location_name: page["name"].to_s,
+          message: checkin["message"].to_s,
+          time: Time.at(checkin["timestamp"]).to_s,
+          user_name: user["name"].to_s,
+          user_id: user["id"].to_s,
+          picture_url: "https://graph.facebook.com/#{user["id"]}/picture",
+          friend: self.name
+      }.to_yaml + "</pre>"
+
+      location = page["location"]
+      latitude = location["latitude"]
+      longitude = location["longitude"]
+      message = checkin["message"].to_s
+      post_to_localwiki(name, body, latitude, longitude, message)
+    end
+    return true
+  end
+
 
   private
+
+  def get_obj(array, key, value)
+    array.each do |a|
+      if a[key].to_s == value.to_s
+        return a
+      end
+    end
+    return nil
+  end
+
   def post_to_localwiki(name, body, latitude, longitude, message) 
     args = {
       :base_url => Configurable[:local_wiki_server],
