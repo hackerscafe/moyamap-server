@@ -38,6 +38,19 @@ class LocalWikiClientBase
     return nil
   end
 
+  def exist_with_name?(name)
+    begin
+      response = RestClient.get @base_url + api_path + "?name__iexact=" + escape_and_get_back_slash(name), headers
+      if response.code == 200
+        json = JSON.parse(response.to_str)
+        return json["objects"][0]
+      end
+    rescue => e
+      puts e
+    end
+    return nil
+  end
+
   def create(obj)
     raise RuntimeError, "must set user_name and api_key" unless can_post?
     puts JSON.dump(obj)
@@ -196,5 +209,59 @@ class LocalWikiPageTags < LocalWikiClientBase
   def api_path
     "/api/page_tags/"
   end
+
+end
+
+class LocalWikiUtil
+  def self.fetch_or_create_tag(args, name)
+    tag = LocalWikiTag.new args
+    tag_hash = tag.exist_with_name?(name)
+    if tag_hash.nil?
+      tag_obj = {
+        "name" => name
+      }
+      unless tag.create(tag_obj)
+        p "can't create tag"
+        return nil
+      end
+      tag_hash = tag.exist_with_name?(name)
+    end
+    return tag_hash
+  end
+
+  def self.add_or_new_tag(args, page_slug, page_api_location, tag_resource_uri, tag_slug)
+    page_tags = LocalWikiPageTags.new args
+    page_tags_hash = page_tags.exist?(page_slug)
+    new_tag_uri = "/api/tag/" + tag_slug
+    if page_tags_hash.nil?
+      page_tags_obj = {
+        "page" => page_api_location,
+        "tags" => [new_tag_uri]
+      }
+      unless page_tags.create(page_tags_obj)
+        p "can't create page_tag"
+        return nil
+      end
+    else
+      unless page_tags_hash["tags"].include?(tag_resource_uri)
+        page_tags_hash["tags"] = unescape_list(page_tags_hash["tags"])
+        page_tags_hash["tags"] << new_tag_uri
+        unless page_tags.update(page_slug, page_tags_hash)
+          p "can't update page_tag"
+          return nil
+        end
+      end
+    end
+    return true
+  end
+  
+  def self.unescape_list(tags)
+    ret = Array.new
+    tags.each do |tag|
+      ret << CGI.unescape(tag)
+    end
+    return ret
+  end
+  
 
 end

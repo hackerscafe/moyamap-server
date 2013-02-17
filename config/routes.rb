@@ -1,5 +1,6 @@
 MoyaMap::Application.routes.draw do
 
+  post "/api/tag_to_page" => "api#tag_to_page"
   match "api/*path" => "api#call_wiki", via: [:get, :post]
 
   resource :user_session, only: [:create, :show, :destroy]
