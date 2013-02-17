@@ -132,13 +132,11 @@ class LocalWikiClientBase
   end
 
   def can_post?
-    return false if @user_name.blank? or @api_key.blank?
-    return true
+    @user_name.present? && @api_key.present?
   end
 
   def authorization_header
-    return nil unless can_post?
-    return "ApiKey #{@user_name}:#{@api_key}"
+    "ApiKey #{@user_name}:#{@api_key}" if can_post?
   end
 
   def escape_and_get_back_slash(page_or_id)

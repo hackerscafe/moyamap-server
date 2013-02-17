@@ -13,20 +13,15 @@ class User < ActiveRecord::Base
     checkins.each do |checkin|
       place = checkin["place"]
       name = self.name + "/" + place["id"].to_s
-      #body = place["name"]
-#location_name=六本木 (Roppongi)
-#message=破滅なう
-#time=2013-02-16 20:00
-#user_name=btm.smellman
-#user_id=1173133984
-#pic_url=https://graph.facebook.com/1173133984/picture
-      body = ["location_name=" + place["name"].to_s, 
-              "message=" + checkin["message"].to_s,
-              "time=" + checkin["created_time"].to_s,
-              "user_name=" + self.user_hash["name"].to_s,
-              "user_id=" + self.user_hash["id"].to_s,
-              "picture_url=" + "https://graph.facebook.com/" + self.user_hash["id"].to_s + "/picture"].join("\n<br />")
-      
+      body = "<pre>" + {
+          location_name: place["name"].to_s,
+          message: checkin["message"].to_s,
+          time: checkin["created_time"].to_s,
+          user_name: self.user_hash["name"].to_s,
+          user_id: self.user_hash["id"].to_s,
+          picture_url: "https://graph.facebook.com/#{self.user_hash["id"]}/picture"
+      }.to_yaml + "</pre>"
+
       location = place["location"]
       latitude = location["latitude"]
       longitude = location["longitude"]
@@ -124,7 +119,7 @@ class User < ActiveRecord::Base
       end
     else
       unless page_tags_hash["tags"].include?(tag_resource_uri)
-        page_tags_hash["tags"] = unescape_list(page_tags_hash["tags"])
+        page_tags_hash["tags"] = page_tags_hash["tags"].map{|t| CGI.unescape(t)}
         page_tags_hash["tags"] << new_tag_uri
         unless page_tags.update(page_name, page_tags_hash)
           logger.debug "can't update page_tag"
@@ -136,22 +131,8 @@ class User < ActiveRecord::Base
   end
 
   def get_match_tags(message)
-    tag_names = Array.new
-    TAGS.each do |tag|
-      r = Regexp.new(tag)
-      if r =~ message
-        tag_names << tag
-      end
+    TAGS.select do |tag|
+      Regexp.new(tag) =~ message
     end
-    return tag_names
   end
-
-  def unescape_list(tags)
-    ret = Array.new
-    tags.each do |tag|
-      ret << CGI.unescape(tag)
-    end
-    return ret
-  end
-
 end
