@@ -53,22 +53,27 @@ class ApiController < ApplicationController
   end
     
   def get_user_tags
-    if params[:dummy_id]
-      session[:user_id] = params[:dummy_id]
-    end
-    unless session[:user_id]
-      render json: {"status" => "NG", "message" => "セッションが取得できません"}, status: "500"
-      return
-    end
-    user = User.where(:id => session[:user_id]).first
-    unless user
-      render json: {"status" => "NG", "message" => "ユーザが取得できません"}, status: "500"
-      return
-    end
     user_type = params[:user_type]
+    if user_type != "all"
+      if params[:dummy_id]
+        session[:user_id] = params[:dummy_id]
+      end
+      unless session[:user_id]
+        render json: {"status" => "NG", "message" => "セッションが取得できません"}, status: "500"
+        return
+      end
+      user = User.where(:id => session[:user_id]).first
+      unless user
+        render json: {"status" => "NG", "message" => "ユーザが取得できません"}, status: "500"
+        return
+      end
+      user_type = params[:user_type]
+    end
     #http://moya-map.trick-with.net/api/page_tags?page__name__contains=btm.smellman
     #http://moya-map.trick-with.net/api/page_tags?page__contents__contains=friend:btm.smellman
     case user_type
+    when "all"
+      uri = URI(Configurable[:local_wiki_api_endpoint] + "/page_tags?format=json&limit=0")
     when "me"
       uri = URI(Configurable[:local_wiki_api_endpoint] + "/page_tags?format=json&limit=0&page__name__contains=" + user.name)
     when "friend"
