@@ -119,7 +119,7 @@ class User < ActiveRecord::Base
       end
     else
       unless page_tags_hash["tags"].include?(tag_resource_uri)
-        page_tags_hash["tags"] = unescape_list(page_tags_hash["tags"])
+        page_tags_hash["tags"] = page_tags_hash["tags"].map{|t| CGI.unescape(t)}
         page_tags_hash["tags"] << new_tag_uri
         unless page_tags.update(page_name, page_tags_hash)
           logger.debug "can't update page_tag"
@@ -131,22 +131,8 @@ class User < ActiveRecord::Base
   end
 
   def get_match_tags(message)
-    tag_names = Array.new
-    TAGS.each do |tag|
-      r = Regexp.new(tag)
-      if r =~ message
-        tag_names << tag
-      end
+    TAGS.select do |tag|
+      Regexp.new(tag) =~ message
     end
-    return tag_names
   end
-
-  def unescape_list(tags)
-    ret = Array.new
-    tags.each do |tag|
-      ret << CGI.unescape(tag)
-    end
-    return ret
-  end
-
 end
