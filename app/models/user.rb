@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'localwiki_client'
+require 'net/https'
 
 class User < ActiveRecord::Base
   serialize :user_hash, Hash
@@ -40,7 +41,13 @@ class User < ActiveRecord::Base
     query = CGI.escape(query)
     uri = URI(base_uri + query + "&access_token=" + self.fb_token)
     req = Net::HTTP::Get.new(uri.request_uri)
-    res = Net::HTTP.new(uri.host).request(req)
+    https = Net::HTTP.new(uri.host, 443)
+    https.use_ssl = true
+    https.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    https.ca_path = '/etc/ssl/certs' if File.exists?('/etc/ssl/certs') # Ubuntu
+    https.ca_file = '/opt/local/share/curl/curl-ca-bundle.crt' if File.exists?('/opt/local/share/curl/curl-ca-bundle.crt') # Mac OS X
+    res = https.request(req)
+    
     json = res.body.present? ? JSON.parse(res.body) : {}
     json["data"].each do |data|
       case data["name"]
