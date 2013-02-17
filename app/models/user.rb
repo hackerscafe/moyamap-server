@@ -11,8 +11,8 @@ class User < ActiveRecord::Base
     checkins = @graph.get_connections("me", "checkins")
     
     checkins.each do |checkin|
-      place = checkin["place"]
-      name = self.name + "/" + place["id"]
+      place = checkin["place"].to_s
+      name = self.name + "/" + place["id"].to_s
       #body = place["name"]
 #location_name=六本木 (Roppongi)
 #message=破滅なう
@@ -20,17 +20,17 @@ class User < ActiveRecord::Base
 #user_name=btm.smellman
 #user_id=1173133984
 #pic_url=https://graph.facebook.com/1173133984/picture
-      body = ["location_name=" + place["name"], 
-              "message=" + checkin["message"],
-              "time=" + checkin["created_time"],
-              "user_name=" + checkin["from"]["name"],
-              "user_id=" + checkin["from"]["id"],
-              "picture_url=" + "https://graph.facebook.com/" + checkin["from"]["id"] + "/picture"].join("\n<br />")
+      body = ["location_name=" + place["name"].to_s, 
+              "message=" + checkin["message"].to_s,
+              "time=" + checkin["created_time"].to_s,
+              "user_name=" + self.user_hash["name"].to_s,
+              "user_id=" + self.user_hash["id"].to_s,
+              "picture_url=" + "https://graph.facebook.com/" + self.user_hash["id"].to_s + "/picture"].join("\n<br />")
       
-      location = place["location"]
-      latitude = location["latitude"]
-      longitude = location["longitude"]
-      message = checkin["message"]
+      location = place["location"].to_s
+      latitude = location["latitude"].to_s
+      longitude = location["longitude"].to_s
+      message = checkin["message"].to_s
       post_to_localwiki(name, body, latitude, longitude, message)
     end
     return true
