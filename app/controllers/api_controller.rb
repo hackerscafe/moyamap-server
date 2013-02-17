@@ -52,4 +52,52 @@ class ApiController < ApplicationController
     return
   end
     
+  def get_user_tags
+    if params[:dummy_id]
+      session[:user_id] = params[:dummy_id]
+    end
+    unless session[:user_id]
+      render json: {"status" => "NG", "message" => "セッションが取得できません"}, status: "500"
+      return
+    end
+    user = User.where(:id => session[:user_id]).first
+    unless user
+      render json: {"status" => "NG", "message" => "ユーザが取得できません"}, status: "500"
+      return
+    end
+    user_type = params[:user_type]
+    #http://moya-map.trick-with.net/api/page_tags?page__name__contains=btm.smellman
+    #http://moya-map.trick-with.net/api/page_tags?page__contents__contains=friend:btm.smellman
+    case user_type
+    when "me"
+      uri = URI(Configurable[:local_wiki_api_endpoint] + "/page_tags?format=json&limit=0&page__name__contains=" + user.name)
+    when "friend"
+      uri = URI(Configurable[:local_wiki_api_endpoint] + "/page_tags?format=json&limit=0&page__content__contains=friend:+" + user.name)
+    end
+    req = Net::HTTP::Get.new(uri.request_uri)
+    res = Net::HTTP.new(uri.host).request(req)
+    json = res.body.present? ? JSON.parse(res.body) : {}
+    tags = []
+    json["objects"].each do |object|
+      tags = tags + object["tags"]
+    end
+    tags.uniq!
+    objects = Array.new
+    tags.each do |tag_uri|
+      uri = URI(Configurable[:local_wiki_server] + tag_uri)
+      req = Net::HTTP::Get.new(uri.request_uri)
+      res = Net::HTTP.new(uri.host).request(req)
+      json = res.body.present? ? JSON.parse(res.body) : {}
+      objects << json
+    end
+    ret = {
+      meta: {
+        limit: 0,
+        total_count: objects.length,
+      },
+      objects: objects
+    }
+    render json: ret, status: "200"
+  end
+
 end
